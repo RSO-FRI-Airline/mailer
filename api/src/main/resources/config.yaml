@@ -1,0 +1,15 @@
+kumuluzee:
+  name: rso-airline-mailer
+  version: 1.1.0
+  env:
+    name: dev
+  server:
+    base-url: http://localhost:8084
+    http:
+      port: 8084
+  datasources:
+  - jndi-name: jdbc/fri_airline
+    connection-url: lala
+    username: postgres
+    password: pass
+    max-pool-size: 20
