@@ -122,6 +122,7 @@ public class MailEndpoint {
             return Response.ok().build();
         }
         catch(Exception e){
+            e.printStackTrace();
             return Response.serverError().build();
         }
     }

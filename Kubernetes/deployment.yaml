@@ -13,7 +13,7 @@ spec:
         app: mailer
     spec:
       containers:
-      - image: rsoairlines/fri-airlines-mailer:0.0.4
+      - image: rsoairlines/fri-airlines-mailer:0.0.5
         name: mailer
         env:
         - name: GMAIL_PASSWORD
