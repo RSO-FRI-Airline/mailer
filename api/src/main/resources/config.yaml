@@ -14,3 +14,11 @@ kumuluzee:
     username: postgres
     password: pass
     max-pool-size: 20
+  config:
+    etcd:
+      hosts: http://192.168.99.100:2379
+  discovery:
+    etcd:
+      hosts: http://192.168.99.100:2379
+    ttl: 30
+    ping-interval: 5
