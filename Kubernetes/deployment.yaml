@@ -13,7 +13,7 @@ spec:
         app: mailer
     spec:
       containers:
-      - image: rsoairlines/fri-airlines-mailer:0.0.3
+      - image: rsoairlines/fri-airlines-mailer:0.0.4
         name: mailer
         env:
         - name: GMAIL_PASSWORD
@@ -21,6 +21,12 @@ spec:
             secretKeyRef:
               name: mg-key
               key: mg-key
+        - name: KUMULUZEE_DISCOVERY_CLUSTER
+          value: gcloud
+        - name: KUMULUZEE_DISCOVERY_ETCD_HOSTS
+          value: http://etcd:2379
+        - name: KUMULUZEE_CONFIG_ETCD_HOSTS
+          value: http://etcd:2379
         ports:
         - containerPort: 8084
           name: server

@@ -87,6 +87,8 @@ public class MailEndpoint {
     @Path("/process")
     public Response get(){
         if(!searchUrl.isPresent() || !bookingUrl.isPresent() || !weatherUrl.isPresent())
+            System.out.println("Couldn't find some URL's");
+            System.out.println(searchUrl+" "+bookingUrl+" "+weatherUrl);
             Response.serverError().build();
 
         try {
