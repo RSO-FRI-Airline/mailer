@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailer-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mailer
+  template:
+    metadata:
+      labels:
+        app: mailer
+    spec:
+      containers:
+      - image: rsoairlines/fri-airlines-mailer:0.0.1
+        name: mailer
+        env:
+        - name: GMAIL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mg-key
+              key: mg-key
+        ports:
+        - containerPort: 8084
+          name: server
+          protocol: TCP
