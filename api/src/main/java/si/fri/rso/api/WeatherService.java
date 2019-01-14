@@ -17,7 +17,7 @@ import java.util.Optional;
 public class WeatherService {
     @Timed
     @CircuitBreaker(requestVolumeThreshold = 3)
-    @Timeout(value = 5, unit = ChronoUnit.SECONDS)
+    @Timeout(value = 3, unit = ChronoUnit.SECONDS)
     @Fallback(fallbackMethod = "GetForecastFallback")
     public String GetForecast(String city, Optional<String> weatherUrl) throws Exception{
         URL url = new URL(weatherUrl.get()+"/v1/forecast/cities/"+city);
@@ -37,6 +37,7 @@ public class WeatherService {
     }
 
     public String GetForecastFallback(String city, Optional<String> weatherUrl) throws Exception {
+        System.out.println("Fallback executed");
         return "{\"reports\": {}}";
     }
 }

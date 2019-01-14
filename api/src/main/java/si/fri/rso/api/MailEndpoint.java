@@ -155,7 +155,7 @@ public class MailEndpoint {
         String formattedDate = sdf.format(date);
 
         if(reports.has(formattedDate)){
-            reports.getJSONObject(formattedDate);
+            return reports.getJSONObject(formattedDate);
         }
         return new JSONObject("{\"summary\": \"Weather service not available!\", \"temperatures\": \"No temperatures available!\"}");
     }
