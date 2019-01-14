@@ -22,3 +22,23 @@ kumuluzee:
       hosts: http://192.168.99.100:2379
     ttl: 30
     ping-interval: 5
+  logs:
+    config-file: '<?xml version="1.0" encoding="UTF-8"?>
+                      <Configuration name="customers">
+                          <Appenders>
+                              <Console name="console" target="SYSTEM_OUT">
+                                  <PatternLayout pattern="%d %p %marker %m %X %ex %n"/>
+                              </Console>
+                              <Socket name="logstash" host="7fc68e34-5102-46a5-a236-3baab8272f77-ls.logit.io"
+                              port="13059" protocol="tcp">
+                                  <JSONLayout complete="true" compact="true" eventEol="true" charset="UTF-8" properties="true"/>
+                              </Socket>
+                          </Appenders>
+                          <Loggers>
+                              <!-- Default logger -->
+                              <Root level="all">
+                                  <AppenderRef ref="console" level="info"/>
+                                  <AppenderRef ref="logstash" level="trace"/>
+                              </Root>
+                          </Loggers>
+                      </Configuration>'

@@ -2,6 +2,14 @@ package si.fri.rso.api;
 
 import com.kumuluz.ee.configuration.utils.ConfigurationUtil;
 import com.kumuluz.ee.discovery.annotations.DiscoverService;
+import com.kumuluz.ee.fault.tolerance.annotations.GroupKey;
+import com.kumuluz.ee.logs.cdi.Log;
+import com.kumuluz.ee.logs.cdi.LogParams;
+import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Timeout;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -19,15 +27,23 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 @Path("mail")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RequestScoped
+@Log
+@Bulkhead
 public class MailEndpoint {
+
+    @Inject
+    WeatherService weatherService;
 
     @Inject
     @DiscoverService(value = "rso-airline-booking")
@@ -44,6 +60,7 @@ public class MailEndpoint {
     @POST
     @ApplicationScoped
     @Path("/send")
+    @Log
     public Response get(Mail mail){
 
         Properties props = new Properties();
@@ -86,10 +103,11 @@ public class MailEndpoint {
     @ApplicationScoped
     @Path("/process")
     public Response get(){
-        if(!searchUrl.isPresent() || !bookingUrl.isPresent() || !weatherUrl.isPresent())
+        if(!searchUrl.isPresent() || !bookingUrl.isPresent() || !weatherUrl.isPresent()){
             System.out.println("Couldn't find some URL's");
             System.out.println(searchUrl+" "+bookingUrl+" "+weatherUrl);
-            Response.serverError().build();
+            return Response.serverError().build();
+        }
 
         try {
             JSONArray bookings = new JSONArray(GetBookings());
@@ -99,7 +117,8 @@ public class MailEndpoint {
                 JSONObject customer = b.getJSONObject("customer");
                 JSONObject schedule = price.getJSONObject("schedule");
 
-                JSONObject forecast = new JSONObject(GetForecast(schedule.getJSONObject("destination").getString("id")));
+                String city = schedule.getJSONObject("destination").getString("id");
+                JSONObject forecast = new JSONObject(weatherService.GetForecast(city, weatherUrl));
                 JSONObject f = GetDay(forecast, price.getLong("date"));
 
                 Mail mail = new Mail();
@@ -135,26 +154,11 @@ public class MailEndpoint {
         sdf.setTimeZone(java.util.TimeZone.getTimeZone("GMT+1"));
         String formattedDate = sdf.format(date);
 
-        return reports.getJSONObject(formattedDate);
-    }
-
-    private String GetForecast(String city) throws Exception{
-        URL url = new URL(weatherUrl.get()+"/v1/forecast/cities/"+city);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.setRequestProperty("Content-Type", "application/json");
-        int status = con.getResponseCode();
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        String inputLine;
-        StringBuffer content = new StringBuffer();
-        while ((inputLine = in.readLine()) != null) {
-            content.append(inputLine);
+        if(reports.has(formattedDate)){
+            reports.getJSONObject(formattedDate);
         }
-        in.close();
-        con.disconnect();
-        return content.toString();
+        return new JSONObject("{\"summary\": \"Weather service not available!\", \"temperatures\": \"No temperatures available!\"}");
     }
-
 
     private String GetPrice(int token) throws Exception{
         URL url = new URL(searchUrl.get()+"/v1/search/price/"+token);
